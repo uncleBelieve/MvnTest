@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="top.airprogram.user.dao.teacherMapper" >
+  <resultMap id="BaseResultMap" type="top.airprogram.user.entity.teacher" >
+    <id column="Tid" property="tid" jdbcType="INTEGER" />
+    <result column="Tname" property="tname" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+
+
+  <collection property="stuList" resultMap="stuResultMap"/>  <!--带集合的查询-->
+  
+  </resultMap>
+
+
+  <resultMap id="stuResultMap" type="top.airprogram.user.entity.student" >  <!--studentResultMap-->
+    <id column="Sid" property="sid" jdbcType="INTEGER" />
+    <result column="Sname" property="sname" jdbcType="VARCHAR" />
+    <result column="Sage" property="sage" jdbcType="INTEGER" />
+    <result column="Tid" property="tid" jdbcType="INTEGER" />
+  </resultMap>
+
+
+
+  <sql id="Base_Column_List" >
+   t.Tid, Tname, username, password
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from teacher
+    where Tid = #{tid,jdbcType=INTEGER}
+  </select>
+
+
+
+
+  <!--本处查询学生列表-->
+  <select id="selectByPrimaryKeyWithStudent" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />,
+    Sid, Sname, Sage, s.Tid
+    from teacher t
+    LEFT JOIN student s on s.Tid = t.Tid
+    where t.Tid = #{tid,jdbcType=INTEGER}
+  </select>
+
+
+
+  <!--后15min,查询id（不止一个ID，往常是一个id）为1 2 的老师-->
+  <select id="selectByTid" resultMap="BaseResultMap" parameterType="list" >
+    select
+    <include refid="Base_Column_List" />
+    from teacher t
+    where t.Tid IN
+    <foreach collection="tids" item="it" open="(" close=")" separator=",">   <!--循环老师ID-->
+       #{it}
+    </foreach>
+  </select>
+
+
+
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from teacher
+    where Tid = #{tid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="top.airprogram.user.entity.teacher" >
+    insert into teacher (Tid, Tname, username, 
+      password)
+    values (#{tid,jdbcType=INTEGER}, #{tname,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, 
+      #{password,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="top.airprogram.user.entity.teacher"  useGeneratedKeys="true" keyProperty="tid"> <!--useGeneratedKeys="true"意思生成的主键返回
+                                                                                      ,keyProperty="tid"意思是返回的tid是主键-->
+    insert into teacher
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="tid != null" >
+        Tid,
+      </if>
+      <if test="tname != null" >
+        Tname,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="password != null" >
+        password,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="tid != null" >
+        #{tid,jdbcType=INTEGER},
+      </if>
+      <if test="tname != null" >
+        #{tname,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        #{password,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="top.airprogram.entity.teacher" >
+    update teacher
+    <set >
+      <if test="tname != null" >
+        Tname = #{tname,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        username = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where Tid = #{tid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="top.airprogram.user.entity.teacher" >
+    update teacher
+    set Tname = #{tname,jdbcType=VARCHAR},
+      username = #{username,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR}
+    where Tid = #{tid,jdbcType=INTEGER}
+  </update>
+</mapper>
